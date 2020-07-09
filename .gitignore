@@ -5,3 +5,4 @@ dixit/static/cards/*
 build
 dist
 config.local.json
+*.pickle

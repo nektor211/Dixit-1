@@ -16,6 +16,7 @@ import tornado.web
 import logging
 import json
 import os
+import pickle
 import sys
 import time
 
@@ -51,6 +52,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 self.set_cookie(self.USER_COOKIE_NAME, uid)
             puid = hash_obj(uid, add_random=True)
             self.user = self.application.users.add_user(uid, puid)
+            self.application.save()
         else:
             self.user = self.application.users.get_user(uid)
             self.user.ping()
@@ -126,6 +128,7 @@ class SetUsernameHandler(RequestHandler):
     def post(self):
         username = self.get_argument("username", default=None)
         new_name = self.user.set_name(username) if username else self.user.name
+        self.application.save()
         self.write(new_name)
 
 
@@ -180,6 +183,7 @@ class CreateHandler(RequestHandler):
             limits,
         )
         self.application.games.append(game)
+        self.application.save()
         self.write(str(len(self.application.games) - 1))
 
 
@@ -201,6 +205,7 @@ class HideHandler(RequestHandler):
             raise APIError(Codes.ILLEGAL_RANGE)
 
         self.application.games[gid].hide()
+        self.application.save()
         self.write(json.dumps("ok"))
 
 
@@ -259,6 +264,7 @@ class ChatHandler(RequestHandler):
     def post(self):
         msg = self.get_argument("msg")[: self.application.limits.max_message]
         self.application.chat_log.add(self.user.name, msg)
+        self.application.save()
 
 
 class Commands:
@@ -414,6 +420,17 @@ class Application(tornado.web.Application):
 
         super(Application, self).__init__(*args, **kwargs)
 
+    def save(self):
+        with open("db.pickle", "wb") as f:
+            pickle.dump((self.users, self.games, self.chat_log), f)
+
+    def load(self):
+        try:
+            with open("db.pickle", "rb") as f:
+                self.users, self.games, self.chat_log = pickle.load(f)
+        except FileNotFoundError:
+            pass
+
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
@@ -445,6 +462,7 @@ application = Application(
     ],
     **settings
 )
+application.load()
 
 
 def start():
