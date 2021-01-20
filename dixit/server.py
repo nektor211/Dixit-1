@@ -160,6 +160,7 @@ class CreateHandler(RequestHandler):
             max_score = int(max_score)
             max_players = int(self.get_argument("max_players"))
             max_clue_length = int(self.get_argument("max_clue_length"))
+            cards_per_person = int(self.get_argument("cards_per_person"))
         except ValueError as exc:
             raise APIError(Codes.NOT_AN_INTEGER, exc)
 
@@ -181,6 +182,7 @@ class CreateHandler(RequestHandler):
             max_score,
             max_clue_length,
             limits,
+            cards_per_person,
         )
         self.application.games.append(game)
         self.application.save()
