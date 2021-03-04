@@ -576,6 +576,18 @@ $(document).ready(function() {
         }
     });
 
+    $('#chatShow').hide();
+    $('#chatHide').click(function() {
+        $('#chatRoom').hide();
+        $('#chatShow').show();
+        $('#chatHide').hide();
+    })
+    $('#chatShow').click(function() {
+        $('#chatRoom').show();
+        $('#chatShow').hide();
+        $('#chatHide').show();
+    })
+
 
     // Nice card animations
     function animateHand(isUp) {
